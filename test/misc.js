@@ -29,6 +29,18 @@ describe('Utils', function () {
     assert.strictEqual(isValidEntityCode(0x7F), false);
   });
 
+  it('replaceEntities', function () {
+    var replaceEntities = require('../lib/common/utils').replaceEntities;
+
+    assert.strictEqual(replaceEntities('&amp;'), '&');
+    assert.strictEqual(replaceEntities('&#32;'), ' ');
+    assert.strictEqual(replaceEntities('&#x20;'), ' ');
+    assert.strictEqual(replaceEntities('&amp;&amp;'), '&&');
+
+    assert.strictEqual(replaceEntities('&am;'), '&am;');
+    assert.strictEqual(replaceEntities('&#00;'), '&#00;');
+  });
+
   it('assign', function () {
     var assign = require('../lib/common/utils').assign;
 
@@ -51,12 +63,12 @@ describe('API', function () {
   });
 
   it('configure coverage', function () {
-    var md = new Remarkable();
+    var md = new Remarkable('full');
 
     // conditions coverage
     md.configure({});
 
-    md.render('123');
+    assert.strictEqual(md.render('123'), '<p>123</p>\n');
   });
 
   it('plugin', function () {
@@ -70,6 +82,50 @@ describe('API', function () {
     assert.strictEqual(succeeded, false);
     md.use(plugin, 'bar');
     assert.strictEqual(succeeded, true);
+  });
+
+  it('highlight', function () {
+    var md = new Remarkable({
+      highlight: function (str) {
+        return '==' + str + '==';
+      }
+    });
+
+    assert.strictEqual(md.render('```\nhl\n```'), '<pre><code>==hl\n==</code></pre>\n');
+  });
+
+  it('highlight escape by default', function () {
+    var md = new Remarkable({
+      highlight: function () {
+        return '';
+      }
+    });
+
+    assert.strictEqual(md.render('```\n&\n```'), '<pre><code>&amp;\n</code></pre>\n');
+  });
+
+  it('force hardbreaks', function () {
+    var md = new Remarkable({ breaks: true });
+
+    assert.strictEqual(md.render('a\nb'), '<p>a<br>\nb</p>\n');
+    md.set({ xhtmlOut: true });
+    assert.strictEqual(md.render('a\nb'), '<p>a<br />\nb</p>\n');
+  });
+
+  it('xhtmlOut enabled', function () {
+    var md = new Remarkable({ xhtmlOut: true });
+
+    assert.strictEqual(md.render('---'), '<hr />\n');
+    assert.strictEqual(md.render('![]()'), '<p><img src="" alt="" /></p>\n');
+    assert.strictEqual(md.render('a  \\\nb'), '<p>a  <br />\nb</p>\n');
+  });
+
+  it('xhtmlOut disabled', function () {
+    var md = new Remarkable();
+
+    assert.strictEqual(md.render('---'), '<hr>\n');
+    assert.strictEqual(md.render('![]()'), '<p><img src="" alt=""></p>\n');
+    assert.strictEqual(md.render('a  \\\nb'), '<p>a  <br>\nb</p>\n');
   });
 
 });
@@ -91,9 +147,20 @@ describe('Misc', function () {
   });
 
   it('Should parse inlines only', function () {
-    var md = new Remarkable();
+    var md = new Remarkable('full');
 
     assert.strictEqual(md.renderInline('a *b* c'), 'a <em>b</em> c');
+  });
+
+  it('Renderer should have pluggable inline and block rules', function () {
+    var md = new Remarkable();
+
+    md.renderer.rules.em_open = function () { return '<it>'; };
+    md.renderer.rules.em_close = function () { return '</it>'; };
+    md.renderer.rules.paragraph_open = function () { return '<par>'; };
+    md.renderer.rules.paragraph_close = function () { return '</par>'; };
+
+    assert.strictEqual(md.render('*b*'), '<par><it>b</it></par>');
   });
 
 });

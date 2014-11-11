@@ -1,7 +1,13 @@
 {
+<<<<<<< HEAD
+  "name": "remarkable-dev",
+  "version": "1.3.0",
+  "description": "temporary package to provide a compatible remarkable for remarkably",
+=======
   "name": "remarkable",
   "version": "1.4.0",
   "description": "Markdown parser, done right. Commonmark support, extensions, syntax plugins, high speed - all in one.",
+>>>>>>> upstream/dev
   "keywords": [
     "markdown",
     "md",
@@ -11,7 +17,7 @@
   "homepage": "https://github.com/jonschlinkert/remarkable",
   "repository": {
     "type": "git",
-    "url": "git://github.com/jonschlinkert/remarkable.git"
+    "url": "https://github.com/loveencounterflow/remarkable.git"
   },
   "bugs": {
     "url": "https://github.com/jonschlinkert/remarkable/issues"
